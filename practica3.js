@@ -1,4 +1,4 @@
-const game = function() {
+const game = function () {
   ////////// Load Quintus object //////////
   const Q = (window.Q = Quintus()
     .include("Sprites, Scenes, Input, UI, Touch, TMX, Anim, 2D")
@@ -11,34 +11,62 @@ const game = function() {
 
   ////////// Load Player Sprite //////////
   Q.Sprite.extend("Mario", {
-    init: function(p) {
+    init: function (p) {
       this._super(p, {
-        sheet: "marioR",
+        sprite: "mario",
+        sheet: "mario",
         frame: 0,
+        direction: "right",
         x: 1850,
         y: 380
       });
 
-      this.add("2d, platformerControls");
+      this.add("2d, platformerControls, Anim");
+      this.add("animation");
 
-      this.on("hit.sprite", function(collision) {
+      this.on("hit.sprite", function (collision) {
         //TODO
       });
+
+      Q.input.on("up", this, "jump");
     },
 
-    step: function(dt) {
+    step: function (dt) {
       if (this.p.y >= 700) {
-        this.p.sheet = "marioR";
+        this.p.sheet = "mario";
         this.p.frame = 0;
         this.p.x = 150;
         this.p.y = 380;
       }
+
+      if (this.p.vx > 0) {
+        this.play("run_right");
+      } else if (this.p.vx < 0) {
+        this.play("run_left");
+      } else {
+        this.play("stand_" + (this.p.direction === "right" ? "right" : "left"));
+      }
+    },
+
+    jump: function () {
+      this.play("jump_" + (this.p.direction === "right" ? "right" : "left"), 1);
     }
+
+  });
+
+  Q.animations("mario", {
+    run_right: { frames: [0, 1, 2], rate: 1 / 15 },
+    run_left: { frames: [14, 15, 16], rate: 1 / 15 },
+    stand_right: { frames: [0], rate: 1 / 5 },
+    stand_left: { frames: [14], rate: 1 / 5 },
+    jump_right: { frames: [4], rate: 1 / 5, next: "stand_right" },
+    jump_left: { frames: [18], rate: 1 / 5, next: "stand_left" },
+    die: { frames: [12], loop: false }
   });
 
   ////////// Load Goomba Sprite //////////
   Q.Sprite.extend("Goomba", {
-    init: function(p) {
+    init: function (p) {
       this._super(p, {
         sheet: "goomba",
         frame: 0,
@@ -49,14 +77,14 @@ const game = function() {
 
       this.add("2d, aiBounce");
 
-      this.on("bump.left,bump.right,bump.bottom", function(collision) {
+      this.on("bump.left,bump.right,bump.bottom", function (collision) {
         if (collision.obj.isA("Mario")) {
           Q.stageScene("endGame", 1, { label: "You Died" });
           collision.obj.destroy();
         }
       });
 
-      this.on("bump.top", function(collision) {
+      this.on("bump.top", function (collision) {
         if (collision.obj.isA("Mario")) {
           this.destroy();
           collision.obj.p.vy = -300;
@@ -67,36 +95,43 @@ const game = function() {
 
   ////////// Load Bloopa Sprite //////////
   Q.Sprite.extend("Bloopa", {
-    init: function(p) {
+    init: function (p) {
       this._super(p, {
         sheet: "bloopa",
         frame: 0,
-        x: 1700,
+        // x: 1700,
+        x: 1900,
         y: 380,
-        vx: 50
+        //vy: -50,
+        gravity: 0.1
       });
 
       this.add("2d, aiBounce");
 
-      this.on("bump.left,bump.right,bump.bottom", function(collision) {
+      this.on("bump.left,bump.right,bump.bottom", function (collision) {
         if (collision.obj.isA("Mario")) {
           Q.stageScene("endGame", 1, { label: "You Died" });
           collision.obj.destroy();
+          this.p.vy = -150;
+        } else {
+          this.p.vy = -150;
         }
       });
 
-      this.on("bump.top", function(collision) {
+      this.on("bump.top", function (collision) {
         if (collision.obj.isA("Mario")) {
           this.destroy();
           collision.obj.p.vy = -300;
         }
       });
+
+
     }
   });
 
   ////////// Load Princess Sprite //////////
   Q.Sprite.extend("Princess", {
-    init: function(p) {
+    init: function (p) {
       this._super(p, {
         asset: "princess.png",
         x: 2000,
@@ -105,7 +140,7 @@ const game = function() {
 
       this.add("2d");
 
-      this.on("bump.left,bump.right,bump.bottom, bump.top", function(
+      this.on("bump.left,bump.right,bump.bottom, bump.top", function (
         collision
       ) {
         if (collision.obj.isA("Mario")) {
@@ -116,7 +151,7 @@ const game = function() {
   });
 
   ////////// End Game Screen //////////
-  Q.scene("endGame", function(stage) {
+  Q.scene("endGame", function (stage) {
     const container = stage.insert(
       new Q.UI.Container({
         x: Q.width / 2,
@@ -142,7 +177,7 @@ const game = function() {
       })
     );
 
-    button.on("click", function() {
+    button.on("click", function () {
       Q.clearStages();
       Q.stageScene("level1");
     });
@@ -151,7 +186,7 @@ const game = function() {
   });
 
   ////////// Win Game Screen //////////
-  Q.scene("winGame", function(stage) {
+  Q.scene("winGame", function (stage) {
     const container = stage.insert(
       new Q.UI.Container({
         x: Q.width / 2,
@@ -177,7 +212,7 @@ const game = function() {
       })
     );
 
-    button.on("click", function() {
+    button.on("click", function () {
       Q.clearStages();
       Q.stageScene("level1");
     });
@@ -186,7 +221,7 @@ const game = function() {
   });
 
   ////////// Main Title Screen //////////
-  Q.scene("mainTitle", function(stage) {
+  Q.scene("mainTitle", function (stage) {
     const container = stage.insert(
       new Q.UI.Container({
         x: Q.width,
@@ -203,7 +238,7 @@ const game = function() {
       })
     );
 
-    button.on("click", function() {
+    button.on("click", function () {
       Q.clearStages();
       Q.stageScene("level1");
     });
@@ -212,7 +247,7 @@ const game = function() {
   });
 
   ////////// Load TMX level //////////
-  Q.scene("level1", function(stage) {
+  Q.scene("level1", function (stage) {
     Q.stageTMX("level.tmx", stage);
 
     const player = stage.insert(new Q.Mario());
@@ -226,15 +261,17 @@ const game = function() {
     stage.insert(new Q.Princess());
   });
 
-  Q.loadTMX(
-    "level.tmx, mario_small.json, mario_small.png, goomba.json, goomba.png, bloopa.json, bloopa.png, princess.png, mainTitle.png",
-    function() {
+  Q.load(
+    "princess.png, mainTitle.png, mario_small.json, mario_small.png, goomba.json, goomba.png, bloopa.json, bloopa.png",
+    function () {
       Q.compileSheets("mario_small.png", "mario_small.json");
       Q.compileSheets("goomba.png", "goomba.json");
       Q.compileSheets("bloopa.png", "bloopa.json");
-      Q.compileSheets("princess.png");
-      Q.compileSheets("mainTitle.png");
-      Q.stageScene("mainTitle");
-    }
-  );
+      Q.loadTMX(
+        "level.tmx",
+        function () {
+          Q.stageScene("mainTitle");
+        }
+      );
+    });
 };
