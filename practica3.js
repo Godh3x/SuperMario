@@ -17,7 +17,7 @@ const game = function () {
         sheet: "mario",
         frame: 0,
         direction: "right",
-        x: 1850,
+        x: 1400,
         y: 380
       });
 
@@ -69,13 +69,15 @@ const game = function () {
     init: function (p) {
       this._super(p, {
         sheet: "goomba",
+        sprite: "goomba",
         frame: 0,
         x: 1600,
         y: 380,
         vx: 100
       });
 
-      this.add("2d, aiBounce");
+      this.add("2d, aiBounce, Anim");
+      this.add("animation");
 
       this.on("bump.left,bump.right,bump.bottom", function (collision) {
         if (collision.obj.isA("Mario")) {
@@ -90,14 +92,24 @@ const game = function () {
           collision.obj.p.vy = -300;
         }
       });
+    },
+
+    step: function(dt) {
+      this.play("run");
     }
   });
+
+  Q.animations("goomba", {
+    run: {frames: [0, 1], rate: 1/5},
+    die: {frames: [2], rate: 1/5}
+    });
 
   ////////// Load Bloopa Sprite //////////
   Q.Sprite.extend("Bloopa", {
     init: function (p) {
       this._super(p, {
         sheet: "bloopa",
+        sprite: "bloopa",
         frame: 0,
         // x: 1700,
         x: 1900,
@@ -106,7 +118,8 @@ const game = function () {
         gravity: 0.1
       });
 
-      this.add("2d, aiBounce");
+      this.add("2d, aiBounce, Anim");
+      this.add("animation");
 
       this.on("bump.left,bump.right,bump.bottom", function (collision) {
         if (collision.obj.isA("Mario")) {
@@ -126,8 +139,17 @@ const game = function () {
       });
 
 
+    },
+
+    step: function(dt) {
+      this.play("run");
     }
   });
+
+  Q.animations("bloopa", {
+    run: {frames: [0, 1], rate: 1/1},
+    die: {frames: [2], rate: 1/5}
+    });
 
   ////////// Load Princess Sprite //////////
   Q.Sprite.extend("Princess", {
