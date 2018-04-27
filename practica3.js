@@ -15,15 +15,13 @@ const game = function() {
       this._super(p, {
         sprite: "mario",
         sheet: "mario",
-        frame: 0,
         direction: "right",
         x: 1850,
         y: 400,
         dead: false
       });
 
-      this.add("2d, platformerControls, Anim");
-      this.add("animation");
+      this.add("2d, platformerControls, animation");
 
       this.on("hit.sprite", function(collision) {
         //TODO
@@ -72,30 +70,20 @@ const game = function() {
   });
 
   ////////// Load Goomba Sprite //////////
-  Q.Sprite.extend("Goomba", {
-    init: function(p) {
-      this._super(p, {
-        sheet: "goomba",
-        frame: 0,
-        sprite: "goomba",
-        x: 1600,
-        y: 380,
-        vx: 100
-      });
-
-      this.add("2d, aiBounce, Anim, animation");
-
-      this.on("bump.left,bump.right,bump.bottom", function(collision) {
+  Q.component("defaultEnemy", {
+    added: function() {
+      this.entity.on("bump.left,bump.right,bump.bottom", function(collision) {
         if (collision.obj.isA("Mario")) {
           Q.stageScene("endGame", 2, { label: "You Died" });
           collision.obj.hit();
         }
       });
 
-      this.on("bump.top", function(collision) {
+      this.entity.on("bump.top", function(collision) {
         if (collision.obj.isA("Mario")) {
           this.play("die");
           this.p.vx = 0;
+          this.p.vy = 0;
           setTimeout(
             function() {
               this.destroy();
@@ -105,10 +93,21 @@ const game = function() {
           collision.obj.p.vy = -300;
         }
       });
-    },
+    }
+  });
 
-    die: function() {
-      this.destroy();
+  ////////// Load Goomba Sprite //////////
+  Q.Sprite.extend("Goomba", {
+    init: function(p) {
+      this._super(p, {
+        sheet: "goomba",
+        sprite: "goomba",
+        x: 1600,
+        y: 380,
+        vx: 100
+      });
+
+      this.add("2d, aiBounce, animation, defaultEnemy");
     }
   });
 
@@ -122,17 +121,14 @@ const game = function() {
     init: function(p) {
       this._super(p, {
         sheet: "bloopa",
-        frame: 0,
         sprite: "bloopa",
-        // x: 1700,
         x: 1900,
         y: 380,
-        //vy: -50,
         gravity: 0.1,
         jumping: false
       });
 
-      this.add("2d, aiBounce, Anim, animation");
+      this.add("2d, aiBounce, animation, defaultEnemy");
 
       this.on("bump.bottom", function(collision) {
         this.p.jumping = true;
@@ -144,30 +140,6 @@ const game = function() {
           this.p.vy = -150;
         } else {
           this.p.vy = -150;
-        }
-      });
-
-      this.on("bump.left,bump.right", function(collision) {
-        if (collision.obj.isA("Mario")) {
-          Q.stageScene("endGame", 2, { label: "You Died" });
-          collision.obj.hit();
-          this.p.vy = -150;
-        } else {
-          this.p.vy = -150;
-        }
-      });
-
-      this.on("bump.top", function(collision) {
-        if (collision.obj.isA("Mario")) {
-          this.play("die");
-          this.p.vy = 0;
-          setTimeout(
-            function() {
-              this.destroy();
-            }.bind(this),
-            500
-          );
-          collision.obj.p.vy = -300;
         }
       });
     },
