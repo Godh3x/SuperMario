@@ -1,4 +1,4 @@
-const game = function () {
+const game = function() {
   ////////// Load Quintus object //////////
   const Q = (window.Q = Quintus()
     .include("Sprites, Scenes, Input, UI, Touch, TMX, Anim, 2D")
@@ -11,7 +11,7 @@ const game = function () {
 
   ////////// Load Player Sprite //////////
   Q.Sprite.extend("Mario", {
-    init: function (p) {
+    init: function(p) {
       this._super(p, {
         sprite: "mario",
         sheet: "mario",
@@ -25,14 +25,14 @@ const game = function () {
       this.add("2d, platformerControls, Anim");
       this.add("animation");
 
-      this.on("hit.sprite", function (collision) {
+      this.on("hit.sprite", function(collision) {
         //TODO
       });
 
       Q.input.on("up", this, "jump");
     },
 
-    step: function (dt) {
+    step: function(dt) {
       if (this.p.y >= 700) {
         this.p.sheet = "mario";
         this.p.frame = 0;
@@ -40,9 +40,9 @@ const game = function () {
         this.p.y = 380;
       }
 
-      if (this.p.vx > 0) {
+      if (this.p.vx > 0 && !this.p.dead) {
         this.play("run_right");
-      } else if (this.p.vx < 0) {
+      } else if (this.p.vx < 0 && !this.p.dead) {
         this.play("run_left");
       } else if (!this.p.dead) {
         this.play("stand_" + (this.p.direction === "right" ? "right" : "left"));
@@ -51,15 +51,14 @@ const game = function () {
       }
     },
 
-    jump: function () {
+    jump: function() {
       this.play("jump_" + (this.p.direction === "right" ? "right" : "left"), 1);
     },
 
-    hit: function () {
+    hit: function() {
       this.p.dead = true;
       this.play("die");
     }
-
   });
 
   Q.animations("mario", {
@@ -74,7 +73,7 @@ const game = function () {
 
   ////////// Load Goomba Sprite //////////
   Q.Sprite.extend("Goomba", {
-    init: function (p) {
+    init: function(p) {
       this._super(p, {
         sheet: "goomba",
         frame: 0,
@@ -86,26 +85,29 @@ const game = function () {
 
       this.add("2d, aiBounce, Anim, animation");
 
-      this.on("bump.left,bump.right,bump.bottom", function (collision) {
+      this.on("bump.left,bump.right,bump.bottom", function(collision) {
         if (collision.obj.isA("Mario")) {
           Q.stageScene("endGame", 2, { label: "You Died" });
           collision.obj.hit();
         }
       });
 
-      this.on("bump.top", function (collision) {
+      this.on("bump.top", function(collision) {
         if (collision.obj.isA("Mario")) {
           this.play("die");
           this.p.vx = 0;
-          setTimeout(function () {
-            this.destroy();
-          }.bind(this), 500);
+          setTimeout(
+            function() {
+              this.destroy();
+            }.bind(this),
+            500
+          );
           collision.obj.p.vy = -300;
         }
       });
     },
 
-    die: function () {
+    die: function() {
       this.destroy();
     }
   });
@@ -117,7 +119,7 @@ const game = function () {
 
   ////////// Load Bloopa Sprite //////////
   Q.Sprite.extend("Bloopa", {
-    init: function (p) {
+    init: function(p) {
       this._super(p, {
         sheet: "bloopa",
         frame: 0,
@@ -132,7 +134,7 @@ const game = function () {
 
       this.add("2d, aiBounce, Anim, animation");
 
-      this.on("bump.bottom", function (collision) {
+      this.on("bump.bottom", function(collision) {
         this.p.jumping = true;
         this.play("down");
 
@@ -140,14 +142,12 @@ const game = function () {
           Q.stageScene("endGame", 2, { label: "You Died" });
           collision.obj.hit();
           this.p.vy = -150;
-
         } else {
           this.p.vy = -150;
         }
       });
 
-
-      this.on("bump.left,bump.right", function (collision) {
+      this.on("bump.left,bump.right", function(collision) {
         if (collision.obj.isA("Mario")) {
           Q.stageScene("endGame", 2, { label: "You Died" });
           collision.obj.hit();
@@ -157,25 +157,24 @@ const game = function () {
         }
       });
 
-      this.on("bump.top", function (collision) {
+      this.on("bump.top", function(collision) {
         if (collision.obj.isA("Mario")) {
           this.play("die");
           this.p.vy = 0;
-          setTimeout(function () {
-            this.destroy();
-          }.bind(this), 500);
+          setTimeout(
+            function() {
+              this.destroy();
+            }.bind(this),
+            500
+          );
           collision.obj.p.vy = -300;
         }
       });
     },
-    step: function (dt) {
-      if (this.p.jumping && dt > 30)
-        this.p.jumping = false;
-      else
-        this.play("up");
+    step: function(dt) {
+      if (this.p.jumping && dt > 30) this.p.jumping = false;
+      else this.play("up");
     }
-
-
   });
 
   Q.animations("bloopa", {
@@ -186,7 +185,7 @@ const game = function () {
 
   ////////// Load Princess Sprite //////////
   Q.Sprite.extend("Princess", {
-    init: function (p) {
+    init: function(p) {
       this._super(p, {
         asset: "princess.png",
         x: 2000,
@@ -195,7 +194,7 @@ const game = function () {
 
       this.add("2d");
 
-      this.on("bump.left,bump.right,bump.bottom, bump.top", function (
+      this.on("bump.left,bump.right,bump.bottom, bump.top", function(
         collision
       ) {
         if (collision.obj.isA("Mario")) {
@@ -208,7 +207,7 @@ const game = function () {
 
   ////////// Load Coin Sprite //////////
   Q.Sprite.extend("Coin", {
-    init: function (p) {
+    init: function(p) {
       this._super(p, {
         sheet: "coin",
         frame: 0,
@@ -216,30 +215,35 @@ const game = function () {
         x: 1800,
         y: 390,
         gravity: 0,
-        sensor: true
+        sensor: true,
+        colided: false
       });
 
       this.add("tween, animation");
 
-      this.on("sensor", function (collision) {
-        if (collision.isA("Mario")) {
-          this.animate({ y: this.p.y - 50 }, .2, Q.Easing.Linear,
-            { callback: function () { this.destroy() } });
+      this.on("sensor", function(collision) {
+        if (!this.p.collided && collision.isA("Mario")) {
+          Q.state.inc("score", 1);
+          this.p.collided = true;
+          this.animate({ y: this.p.y - 50 }, 0.2, Q.Easing.Linear, {
+            callback: function() {
+              this.destroy();
+            }
+          });
         }
       });
     },
-    step: function (p) {
+    step: function(p) {
       this.play("color");
     }
   });
 
   Q.animations("coin", {
-    color: { frames: [0, 1, 2], loop: true, rate: 1 / 2 },
+    color: { frames: [0, 1, 2], loop: true, rate: 1 / 2 }
   });
 
   ////////// End Game Screen //////////
-  Q.scene("endGame", function (stage) {
-
+  Q.scene("endGame", function(stage) {
     const container = stage.insert(
       new Q.UI.Container({
         x: Q.width / 2,
@@ -265,12 +269,12 @@ const game = function () {
       })
     );
 
-    button.on("click", function () {
+    button.on("click", function() {
       Q.clearStages();
       Q.stageScene("mainTitle", 2);
     });
 
-    Q.input.on("confirm", function () {
+    Q.input.on("confirm", function() {
       Q.clearStages();
       Q.stageScene("mainTitle", 2);
     });
@@ -278,9 +282,8 @@ const game = function () {
     container.fit(20);
   });
 
-
   ////////// Main Title Screen //////////
-  Q.scene("mainTitle", function (stage) {
+  Q.scene("mainTitle", function(stage) {
     const container = stage.insert(
       new Q.UI.Container({
         x: Q.width,
@@ -297,22 +300,41 @@ const game = function () {
       })
     );
 
-    button.on("click", function () {
-      Q.clearStages();
-      Q.stageScene("level1", 1);
-    });
+    button.on("click", newGame);
 
-    Q.input.on("confirm", function () {
-      Q.clearStages();
-      Q.stageScene("level1", 1);
-    });
-
+    Q.input.on("confirm", newGame);
 
     container.fit(20);
   });
 
+  const newGame = function() {
+    Q.clearStages();
+    Q.state.reset({ score: 0 });
+    Q.stageScene("HUD", 2);
+    Q.stageScene("level1", 1);
+  };
+
+  ////////// Score HUD //////////
+  Q.UI.Text.extend("Score", {
+    init: function(p) {
+      this._super({
+        label: "score: 0",
+        x: 60,
+        y: 0
+      });
+      Q.state.on("change.score", this, "score");
+    },
+    score: function(score) {
+      this.p.label = "score: " + score;
+    }
+  });
+
+  Q.scene("HUD", function(stage) {
+    stage.insert(new Q.Score());
+  });
+
   ////////// Load TMX level //////////
-  Q.scene("level1", function (stage) {
+  Q.scene("level1", function(stage) {
     Q.stageTMX("level.tmx", stage);
 
     const player = stage.insert(new Q.Mario());
@@ -325,20 +347,19 @@ const game = function () {
     stage.insert(new Q.Bloopa());
     stage.insert(new Q.Princess());
     stage.insert(new Q.Coin());
+    stage.insert(new Q.Score());
   });
 
   Q.load(
     "princess.png, mainTitle.png, mario_small.json, mario_small.png, goomba.json, goomba.png, bloopa.json, bloopa.png,coin.json,coin.png",
-    function () {
+    function() {
       Q.compileSheets("mario_small.png", "mario_small.json");
       Q.compileSheets("goomba.png", "goomba.json");
       Q.compileSheets("bloopa.png", "bloopa.json");
       Q.compileSheets("coin.png", "coin.json");
-      Q.loadTMX(
-        "level.tmx",
-        function () {
-          Q.stageScene("mainTitle");
-        }
-      );
-    });
+      Q.loadTMX("level.tmx", function() {
+        Q.stageScene("mainTitle");
+      });
+    }
+  );
 };
