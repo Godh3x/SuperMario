@@ -18,9 +18,10 @@ const game = function() {
         sprite: 'mario',
         sheet: 'mario',
         direction: 'right',
-        x: 1850,
-        y: 400,
+        x: 150,
+        y: 380,
         dead: false,
+        jumpSpeed: -450
       });
 
       this.add('2d, platformerControls, animation');
@@ -71,7 +72,7 @@ const game = function() {
     die: { frames: [12], loop: false },
   });
 
-  ////////// Load Goomba Sprite //////////
+  ////////// defaultEnemy Component //////////
   Q.component('defaultEnemy', {
     added: function() {
       this.entity.on('bump.left,bump.right,bump.bottom', function(collision) {
@@ -111,11 +112,12 @@ const game = function() {
       });
 
       this.add('2d, aiBounce, animation, defaultEnemy');
+      this.play("move");
     },
   });
 
   Q.animations('goomba', {
-    move: { frames: [0, 1], rate: 1 / 15 },
+    move: { frames: [0, 1], rate: 1 / 5 },
     die: { frames: [2], loop: false },
   });
 
@@ -130,10 +132,10 @@ const game = function() {
       });
 
       this.add('2d, aiBounce, animation, defaultEnemy');
+      this.play("move");
 
       this.on('bump.bottom', function(collision) {
-        this.p.jumping = true;
-        this.play('down');
+
 
         if (collision.obj.isA('Mario')) {
           Q.stageScene('endGame', 2, {
@@ -146,16 +148,11 @@ const game = function() {
           this.p.vy = -150;
         }
       });
-    },
-    step: function(dt) {
-      if (this.p.jumping && dt > 30) this.p.jumping = false;
-      else this.play('up');
-    },
+    }
   });
 
   Q.animations('bloopa', {
-    up: { frames: [0], loop: false },
-    down: { frames: [1, 1], rate: 1 / 30 },
+    move: {frames: [0,1], rate: 1/1},
     die: { frames: [2], loop: false },
   });
 
@@ -199,7 +196,7 @@ const game = function() {
       this.on('sensor', function(collision) {
         if (!this.p.collided && collision.isA('Mario')) {
           Q.audio.play('coin.ogg');
-          Q.state.inc('score', 1);
+          Q.state.inc('score', 50);
           this.p.collided = true;
           this.animate({ y: this.p.y - 50 }, 0.2, Q.Easing.Linear, {
             callback: function() {
@@ -323,9 +320,12 @@ const game = function() {
     stage.viewport.offsetX = -130;
 
     stage.insert(new Q.Goomba({ x: 1600, y: 380 }));
-    stage.insert(new Q.Bloopa({ x: 1900, y: 380 }));
+    stage.insert(new Q.Bloopa({ x: 850, y: 380 }));
     stage.insert(new Q.Princess({ x: 2000, y: 390 }));
-    stage.insert(new Q.Coin({ x: 1800, y: 390 }));
+    for(let i = 0; i < 10; i++) {
+      stage.insert(new Q.Coin({ x: 200*i, y: 400 }));
+    }
+    
     stage.insert(new Q.Score());
   });
 
