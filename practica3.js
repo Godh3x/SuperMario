@@ -21,7 +21,7 @@ const game = function() {
         x: 150,
         y: 380,
         dead: false,
-        jumpSpeed: -450
+        jumpSpeed: -450,
       });
 
       this.add('2d, platformerControls, animation');
@@ -112,7 +112,7 @@ const game = function() {
       });
 
       this.add('2d, aiBounce, animation, defaultEnemy');
-      this.play("move");
+      this.play('move');
     },
   });
 
@@ -132,11 +132,9 @@ const game = function() {
       });
 
       this.add('2d, aiBounce, animation, defaultEnemy');
-      this.play("move");
+      this.play('move');
 
       this.on('bump.bottom', function(collision) {
-
-
         if (collision.obj.isA('Mario')) {
           Q.stageScene('endGame', 2, {
             label: 'You Died',
@@ -148,11 +146,11 @@ const game = function() {
           this.p.vy = -150;
         }
       });
-    }
+    },
   });
 
   Q.animations('bloopa', {
-    move: {frames: [0,1], rate: 1/1},
+    move: { frames: [0, 1], rate: 1 / 1 },
     die: { frames: [2], loop: false },
   });
 
@@ -295,7 +293,7 @@ const game = function() {
     init: function(p) {
       this._super({
         label: 'score: 0',
-        x: 60,
+        x: 100,
         y: 0,
       });
       Q.state.on('change.score', this, 'score');
@@ -322,10 +320,10 @@ const game = function() {
     stage.insert(new Q.Goomba({ x: 1600, y: 380 }));
     stage.insert(new Q.Bloopa({ x: 850, y: 380 }));
     stage.insert(new Q.Princess({ x: 2000, y: 390 }));
-    for(let i = 0; i < 10; i++) {
-      stage.insert(new Q.Coin({ x: 200*i, y: 400 }));
+    for (let i = 0; i < 10; i++) {
+      stage.insert(new Q.Coin({ x: 200 * i, y: 400 }));
     }
-    
+
     stage.insert(new Q.Score());
   });
 
